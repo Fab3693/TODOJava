@@ -1,17 +1,24 @@
 package org.Fab;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.util.*;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        HashSet<Task> tasks = new HashSet<>();
+        //tasks.add(new Task("123", Status.TODO, "qwe", "qwe", new Date(2000,12,12)));
+        Scanner console = new Scanner(System.in);
+        String inputValue = "2";
+        System.out.println("Здравствуйте! Выберите действие.");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        while (Command.getByNumber(inputValue) != Command.EXIT) {
+            Arrays.stream(Command.values()).forEach(command -> System.out.println(command.getNumber() + ". " + command.getCommand()));
+            inputValue = console.nextLine();
+            try {
+                Command command = Command.getByNumber(inputValue);
+                Objects.requireNonNull(command).execute(tasks, console);
+            } catch (IllegalArgumentException | NullPointerException e){
+                System.out.println("Неизвестная команда, попробуйте ещё раз.");
+            }
         }
     }
 }

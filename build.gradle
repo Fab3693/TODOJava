@@ -12,8 +12,12 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-core:5.15.2'
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    implementation group: 'joda-time', name: 'joda-time', version: '2.3'
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
 }
