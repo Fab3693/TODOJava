@@ -188,7 +188,7 @@ public enum Command {
             }
             System.out.println("Список задач пуст. Вы можете создать задачу, выбрав команду \"ADD\"");
         }
-    },
+    }, //*Не работает*/
     FILTER(5, "filter") {
         @AllArgsConstructor
         @Getter
