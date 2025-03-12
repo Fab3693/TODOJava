@@ -2,6 +2,7 @@ package org.Fab;
 
 import lombok.*;
 
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -29,5 +30,8 @@ public class Task  {
     public String toString() {
         SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
         return "id:"+id+ "\nСтатус: " + status + "\nНазвание: " + name + "\nОписание: " + description + "\nКрайний срок: " + format.format(date);
+    }
+    public record TaskFields (String id,String name, String descripton, Date date){
+
     }
 }

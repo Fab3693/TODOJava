@@ -3,38 +3,27 @@ package org.Fab;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.lang.reflect.Field;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 @Getter
 @AllArgsConstructor
-public enum Command {
+public enum TaskCommandsTest {
     ADD(1, "add") {
         void execute(HashSet<Task> tasks, Scanner scanner) throws DateTimeParseException {
             System.out.println("Укажите название задачи:");
             String name = "";
             while (name.trim().isEmpty()) {
-                try {
-                    name = scanner.nextLine();
-                } catch (NullPointerException e) {
-                    System.out.println("Укажите корректное название.");
-                }
+                name = scanner.nextLine();
             }
             System.out.println("Укажите описание задачи:");
             String description = "";
             while (description.trim().isEmpty()) {
-                try {
-                    description = scanner.nextLine();
-                } catch (NullPointerException e) {
-                    System.out.println("Укажите корректное описание");
-                }
+                description = scanner.nextLine();
             }
             System.out.println("Укажите срок выполнения задачи в формате \"ДД:ММ:ГГГГ\":");
             SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
@@ -66,104 +55,152 @@ public enum Command {
     EDIT(3, "edit") {
         @Override
         void execute(HashSet<Task> tasks, Scanner scanner) {
-            if (!tasks.isEmpty()) {
-                System.out.println("Укажите название задачи, которую хотите отредактировать:");
-                String taskName = "";
-                while (taskName.trim().isEmpty()) {
-                    try {
-                        boolean taskFound = false;
-                        taskName = scanner.nextLine();
-                        for (Task task : tasks) {
-                            if (Objects.equals(task.getName(), taskName)) {
-                                taskFound = true;
-                                System.out.println("Задача найдена: " + task.getName());
-                                System.out.println("Выберите, что бы вы хотели отредактировать:");
-                                Class<?> taskClass = Task.class;
-                                Field[] fields = taskClass.getDeclaredFields();
-                                HashMap<Integer, String> fieldsAndNumbers = new HashMap<>();
-                                int fieldNumber = 1;
-                                for (Field field : fields) {
-                                    if (!field.getName().equals("id")) {
-                                        fieldsAndNumbers.put(fieldNumber, field.getName());
-                                        System.out.println(fieldNumber + ". " + field.getName());
-                                        fieldNumber++;
-                                    }
-                                }
-                                String fieldInput = "";
-                                while (fieldInput.trim().isEmpty()) {
-                                    fieldInput = scanner.nextLine();
-                                    int number = 0;
-                                    try {
-                                        number = Integer.parseInt(fieldInput);
-                                    } catch (NumberFormatException e) {
-                                        for (Map.Entry<Integer, String> entry : fieldsAndNumbers.entrySet()) {
-                                            if (Objects.equals(entry.getValue(), fieldInput)) {
-                                                number = entry.getKey();
-                                            }
-                                        }
-                                    }
-                                    try {
-                                        switch (number) { //*При добавлении новых кейсов нужно обращать внимание на порядок полей. Рекомендуется каждое новое поле добавлять после существующих, в противном случае придётся менять порядок кейсов.*/
-                                            case 1:
-                                                boolean validStatus = false;
-                                                while (!validStatus) {
-                                                    System.out.print("Введите новое значение для поля \"status\" (TODO, IN_PROGRESS, DONE): ");
-                                                    String statusInput = scanner.nextLine();
-                                                    try {
-                                                        task.setStatus(Status.valueOf(statusInput.toUpperCase()));
-                                                        System.out.println("Поле 'status' успешно изменено!");
-                                                        validStatus = true;
-                                                    } catch (IllegalArgumentException e) {
-                                                        System.out.println("Неверное значение для статуса. Допустимые значения: TODO, IN_PROGRESS, DONE.");
-                                                    }
-                                                }
-                                                break;
-                                            case 2:
-                                                System.out.print("Введите новое значение для поля \"name\": ");
-                                                String nameInput = scanner.nextLine();
-                                                task.setName(nameInput);
-                                                System.out.println("Поле 'name' успешно изменено!");
-                                                break;
-                                            case 3:
-                                                System.out.print("Введите новое значение для поля \"description\": ");
-                                                String descriptionInput = scanner.nextLine();
-                                                task.setDescription(descriptionInput);
-                                                System.out.println("Поле 'description' успешно изменено!");
-                                                break;
-                                            case 4:
-                                                System.out.print("Введите новое значение для поля 'date' (в формате dd:MM:yyyy): ");
-                                                String dateInput = scanner.nextLine();
-                                                SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
-                                                task.setDate(format.parse(dateInput));
-                                                System.out.println("Поле 'date' успешно изменено!");
-                                                break;
-                                            default:
-                                                System.out.println("Неверный номер или имя поля. Попробуйте ещё раз.");
-                                                fieldInput = "";
-                                        }
-                                    } catch (NumberFormatException e) {
-                                        System.out.println("Неверный ввод. Пожалуйста, введите номер поля.");
-                                        fieldInput = "";
-                                    } catch (IllegalArgumentException e) {
-                                        System.out.println("Неверное значение для статуса. Допустимые значения: TODO, IN_PROGRESS, DONE.");
-                                        fieldInput = "";
-                                    } catch (ParseException e) {
-                                        System.out.println("Неверный формат даты, ипользуйте формат dd:MM:yyyy.");
-                                        fieldInput = "";
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                        if (!taskFound) {
-                            System.out.println("Задача с названием '" + taskName + "' не найдена.");
-                        }
-                    } catch (NullPointerException e) {
-                        System.out.println("Укажите корректное название задачи.");
+            if (tasks.isEmpty()) {
+                System.out.println("Список задач пуст. Вы можете создать задачу, выбрав команду \"ADD\"");
+                return;
+            }
+
+            String taskName = promptForTaskName(scanner);
+            Task task = findTaskByName(tasks, taskName);
+
+            if (task == null) {
+                System.out.println("Задача с названием '" + taskName + "' не найдена.");
+                return;
+            }
+
+            System.out.println("Задача найдена: " + task.getName());
+            editTaskFields(task, scanner);
+        }
+
+        // Методы вынесены в конец класса
+
+        private String promptForTaskName(Scanner scanner) {
+            System.out.println("Укажите название задачи, которую хотите отредактировать:");
+            String taskName = "";
+            while (taskName.trim().isEmpty()) {
+                taskName = scanner.nextLine();
+            }
+            return taskName;
+        }
+
+        private Task findTaskByName(HashSet<Task> tasks, String taskName) {
+            for (Task task : tasks) {
+                if (Objects.equals(task.getName(), taskName)) {
+                    return task;
+                }
+            }
+            return null;
+        }
+
+        private void editTaskFields(Task task, Scanner scanner) {
+            System.out.println("Выберите, что бы вы хотели отредактировать:");
+
+            HashMap<Integer, String> fieldsAndNumbers = getEditableFields();
+            fieldsAndNumbers.forEach((key, value) -> System.out.println(key + ". " + value));
+
+            String fieldInput = "";
+            while (fieldInput.trim().isEmpty()) {
+                fieldInput = scanner.nextLine();
+                int fieldNumber = parseFieldInput(fieldInput, fieldsAndNumbers);
+
+                if (fieldNumber == -1) {
+                    System.out.println("Неверный номер или имя поля. Попробуйте ещё раз.");
+                    fieldInput = "";
+                    continue;
+                }
+
+                try {
+                    editField(task, scanner, fieldNumber);
+                } catch (IllegalArgumentException | ParseException e) {
+                    System.out.println(e.getMessage());
+                    fieldInput = "";
+                }
+            }
+        }
+
+        private HashMap<Integer, String> getEditableFields() {
+            Class<?> taskClass = Task.class;
+            Field[] fields = taskClass.getDeclaredFields();
+            HashMap<Integer, String> fieldsAndNumbers = new HashMap<>();
+            int fieldNumber = 1;
+
+            for (Field field : fields) {
+                if (!field.getName().equals("id")) {
+                    fieldsAndNumbers.put(fieldNumber, field.getName());
+                    fieldNumber++;
+                }
+            }
+
+            return fieldsAndNumbers;
+        }
+
+        private int parseFieldInput(String fieldInput, HashMap<Integer, String> fieldsAndNumbers) {
+            try {
+                return Integer.parseInt(fieldInput);
+            } catch (NumberFormatException e) {
+                for (Map.Entry<Integer, String> entry : fieldsAndNumbers.entrySet()) {
+                    if (Objects.equals(entry.getValue(), fieldInput)) {
+                        return entry.getKey();
                     }
                 }
             }
-            System.out.println("Список задач пуст. Вы можете создать задачу, выбрав команду \"ADD\"");
+            return -1; // Неверный ввод
+        }
+
+        private void editField(Task task, Scanner scanner, int fieldNumber) throws ParseException {
+            switch (fieldNumber) {
+                case 1:
+                    editStatusField(task, scanner);
+                    break;
+                case 2:
+                    editNameField(task, scanner);
+                    break;
+                case 3:
+                    editDescriptionField(task, scanner);
+                    break;
+                case 4:
+                    editDateField(task, scanner);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Неверный номер поля.");
+            }
+        }
+
+        private void editStatusField(Task task, Scanner scanner) {
+            boolean validStatus = false;
+            while (!validStatus) {
+                System.out.print("Введите новое значение для поля \"status\" (TODO, IN_PROGRESS, DONE): ");
+                String statusInput = scanner.nextLine();
+                try {
+                    task.setStatus(Status.valueOf(statusInput.toUpperCase()));
+                    System.out.println("Поле 'status' успешно изменено!");
+                    validStatus = true;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Неверное значение для статуса. Допустимые значения: TODO, IN_PROGRESS, DONE.");
+                }
+            }
+        }
+
+        private void editNameField(Task task, Scanner scanner) {
+            System.out.print("Введите новое значение для поля \"name\": ");
+            String nameInput = scanner.nextLine();
+            task.setName(nameInput);
+            System.out.println("Поле 'name' успешно изменено!");
+        }
+
+        private void editDescriptionField(Task task, Scanner scanner) {
+            System.out.print("Введите новое значение для поля \"description\": ");
+            String descriptionInput = scanner.nextLine();
+            task.setDescription(descriptionInput);
+            System.out.println("Поле 'description' успешно изменено!");
+        }
+
+        private void editDateField(Task task, Scanner scanner) throws ParseException {
+            System.out.print("Введите новое значение для поля 'date' (в формате dd:MM:yyyy): ");
+            String dateInput = scanner.nextLine();
+            SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
+            task.setDate(format.parse(dateInput));
+            System.out.println("Поле 'date' успешно изменено!");
         }
     },
     DELETE(4, "delete") {
@@ -173,16 +210,12 @@ public enum Command {
                 System.out.println("Укажите название задачи для удаления:");
                 String name = "";
                 while (name.trim().isEmpty()) {
-                    try {
-                        name = scanner.nextLine();
-                        for (Task task : tasks) {
-                            if (Objects.equals(task.getName(), name)) {
-                                tasks.remove(task);
-                                System.out.println("Задача: " + task.getName() + " успешно удалена!");
-                            }
+                    name = scanner.nextLine();
+                    for (Task task : tasks) {
+                        if (Objects.equals(task.getName(), name)) {
+                            tasks.remove(task);
+                            System.out.println("Задача: " + task.getName() + " успешно удалена!");
                         }
-                    } catch (NullPointerException e) {
-                        System.out.println("Укажите корректное название.");
                     }
                 }
             }
@@ -385,18 +418,18 @@ public enum Command {
     private final int number;
     private final String command;
 
-    public static Command getByNumber(String input) {
+    public static TaskCommands getByNumber(String input) {
         try {
             int number = Integer.parseInt(input);
-            for (Command command : Command.values()) {
-                if (command.getNumber() == number) {
-                    return command;
+            for (TaskCommands taskCommands : TaskCommands.values()) {
+                if (taskCommands.getNumber() == number) {
+                    return taskCommands;
                 }
             }
         } catch (NumberFormatException e) {
-            for (Command command : Command.values()) {
-                if (command.getCommand().equalsIgnoreCase(input)) {
-                    return command;
+            for (TaskCommands taskCommands : TaskCommands.values()) {
+                if (taskCommands.getCommand().equalsIgnoreCase(input)) {
+                    return taskCommands;
                 }
             }
         }
