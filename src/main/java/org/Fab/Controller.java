@@ -28,7 +28,7 @@ public class Controller {
     }
 
     public String consoleInput() {
-        if (service.getRepository().getTasks().isEmpty()) {
+        if (service.checkEmpty()) {
             return "1";
         }
         return console.nextLine();

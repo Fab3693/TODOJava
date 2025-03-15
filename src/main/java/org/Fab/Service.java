@@ -38,16 +38,16 @@ public class Service {
                 listTasks();
                 break;
             case EDIT:
-                editTask();
+                editTaskNew(scanner);
                 break;
             case DELETE:
                 deleteTask(scanner);
                 break;
             case FILTER:
-                filterTasks();
+                filterTasks(scanner);
                 break;
             case SORT:
-                sortTasks();
+                sortTasks(scanner);
                 break;
             case EXIT:
                 exit();
@@ -57,15 +57,9 @@ public class Service {
 
     public void addTask(Scanner scanner) {
         System.out.println("Укажите название задачи:");
-        String name = "";
-        while (name.trim().isEmpty()) {
-            name = scanner.nextLine();
-        }
+        String name = getNonEmptyInput(scanner);
         System.out.println("Укажите описание задачи:");
-        String description = "";
-        while (description.trim().isEmpty()) {
-            description = scanner.nextLine();
-        }
+        String description = getNonEmptyInput(scanner);
         System.out.println("Укажите срок выполнения задачи в формате \"ДД:ММ:ГГГГ\":");
         SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
         Date date = null;
@@ -77,7 +71,8 @@ public class Service {
             }
         }
         Status status = Status.TODO;
-        String uniqueID = UUID.randomUUID().toString();
+        int uniqueID = repository.getLastId();
+        repository.setLastId(++uniqueID);
         Task task = new Task(uniqueID, status, name, description, date);
         repository.addTask(task);
         System.out.println("Задача успешно создана!");
@@ -86,22 +81,29 @@ public class Service {
     }
 
     public void listTasks() {
-        if (repository.getTasks().isEmpty()) {
-            System.out.println("Список задач пуст. Вы можете создать задачу, выбрав команду \"ADD\"");
-            return;
-        }
         this.repository.getTasks().forEach(System.out::println);
     }
 
-    public void editTask() {
+    public void editTask(Scanner scanner) {
+
+    }/*Pizdec*/
+
+    public void editTaskNew(Scanner scanner) {
+        System.out.println("Укажите название задачи, которую хотите отредактировать:");
+        Task task = repository.findTaskbyName(getNonEmptyInput(scanner));
+        if (task == null) {
+            System.out.println("Задача не найдена.");
+            return;
+        }
+        System.out.println("Задача найдена: " + task.getName());
+        System.out.println("Текущие данные задачи:");
+        System.out.println(task);
+        EditTask.editTaskFields(task, scanner);
     }
 
     public void deleteTask(Scanner scanner) {
         System.out.println("Укажите название задачи для удаления:");
-        String name = "";
-        while (name.trim().isEmpty()) {
-            name = scanner.nextLine();
-        }
+        String name = getNonEmptyInput(scanner);
         HashSet<Task> tasks = repository.getTasks();
         for (Task task : tasks) {
             if (Objects.equals(task.getName(), name)) {
@@ -117,14 +119,72 @@ public class Service {
         }
     }
 
-    public void filterTasks() {
+    public void filterTasks(Scanner scanner) {
+        HashSet<Task> tasks = repository.getTasks();
+
+        if (tasks.isEmpty()) {
+            System.out.println("Список задач пуст.");
+            return;
+        }
+
+        System.out.println("Выберите, по какому признаку нужна фильтрация:");
+        System.out.println("1. По дате");
+        System.out.println("2. По статусу");
+
+        int choice = FilterTasks.getIntInput(scanner, 1, 2);
+
+        switch (choice) {
+            case 1:
+                FilterTasks.filterByDate(tasks, scanner);
+                break;
+            case 2:
+                FilterTasks.filterByStatus(tasks, scanner);
+                break;
+            default:
+                System.out.println("Неверный выбор.");
+        }
     }
 
-    public void sortTasks() {
+    public void sortTasks(Scanner scanner) {
+        HashSet<Task> tasks = repository.getTasks();
+
+        if (tasks.isEmpty()) {
+            System.out.println("Список задач пуст.");
+            return;
+        }
+
+        System.out.println("Выберите, по какому признаку нужна сортировка:");
+        System.out.println("1. По дате");
+        System.out.println("2. По статусу");
+
+        int choice = SortTasks.getIntInput(scanner, 1, 2);
+
+        switch (choice) {
+            case 1:
+                SortTasks.sortByDate(tasks);
+                break;
+            case 2:
+                SortTasks.sortByStatus(tasks);
+                break;
+            default:
+                System.out.println("Неверный выбор.");
+        }
     }
 
     public void exit() {
         System.out.println("До свидания!");
         System.exit(0);
+    }
+
+    public boolean checkEmpty() {
+        return this.repository.getTasks().isEmpty();
+    }
+
+    protected static String getNonEmptyInput(Scanner scanner) {
+        String input = "";
+        while (input.trim().isEmpty()) {
+            input = scanner.nextLine();
+        }
+        return input;
     }
 }
