@@ -59,7 +59,7 @@ public class Controller {
             return;
         }
         System.out.println("Задача найдена: " + task.getName());
-        System.out.println("Текущие данные задачи:");
+        System.out.println("");
         System.out.println(task);
         service.editTask(taskName, inputHandler);
     }
