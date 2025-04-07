@@ -8,8 +8,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum TaskCommands {
     ADD(1, "add"),
-    LIST(2, "list") ,
-    EDIT(3, "edit") ,
+    LIST(2, "list"),
+    EDIT(3, "edit"),
     DELETE(4, "delete"),
     FILTER(5, "filter"),
     SORT(6, "sort"),
@@ -17,6 +17,4 @@ public enum TaskCommands {
 
     private final int number;
     private final String command;
-
-
 }

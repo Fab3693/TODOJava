@@ -3,9 +3,8 @@ package org.Fab;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -13,11 +12,11 @@ public class Service {
     private Repository repository;
     private TaskCommands command;
 
-    public Service() {
-        this.repository = new Repository();
+    public Service(Repository repository) {
+        this.repository = repository;
     }
 
-    public static TaskCommands getCommand(String input) {
+    public TaskCommands getCommand(String input) {
         if (!input.isEmpty()) {
             for (TaskCommands taskCommands : TaskCommands.values()) {
                 if (taskCommands.getNumber() == Integer.parseInt(input) ||
@@ -29,68 +28,50 @@ public class Service {
         return null;
     }
 
-    public void executeCommand(TaskCommands command, Scanner scanner) {
-        switch (command) {
-            case ADD:
-                addTask(scanner);
-                break;
-            case LIST:
-                listTasks();
-                break;
-            case EDIT:
-                editTaskNew(scanner);
-                break;
-            case DELETE:
-                deleteTask(scanner);
-                break;
-            case FILTER:
-                filterTasks(scanner);
-                break;
-            case SORT:
-                sortTasks(scanner);
-                break;
-            case EXIT:
-                exit();
-                break;
-        }
-    }
+//    public void executeCommand(TaskCommands command, Scanner scanner) {
+//        switch (command) {
+//            case ADD:
+//                addTask();
+//                break;
+//            case LIST:
+//                listTasks();
+//                break;
+//            case EDIT:
+//                editTask(scanner);
+//                break;
+//            case DELETE:
+//                deleteTask(scanner);
+//                break;
+//            case FILTER:
+//                filterTasks(scanner);
+//                break;
+//            case SORT:
+//                sortTasks(scanner);
+//                break;
+//            case EXIT:
+//                exit();
+//                break;
+//        }
+//    }
 
-    public void addTask(Scanner scanner) {
-        System.out.println("Укажите название задачи:");
-        String name = getNonEmptyInput(scanner);
-        System.out.println("Укажите описание задачи:");
-        String description = getNonEmptyInput(scanner);
-        System.out.println("Укажите срок выполнения задачи в формате \"ДД:ММ:ГГГГ\":");
-        SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
-        Date date = null;
-        while (date == null) {
-            try {
-                date = format.parse(scanner.nextLine());
-            } catch (ParseException e) {
-                System.out.println("Неверный формат даты, используйте формат dd:MM:yyyy.");
-            }
-        }
+    public void addTask(String name, String description, Date date) {
+        AddTask addTask = new AddTask();
         Status status = Status.TODO;
         int uniqueID = repository.getLastId();
         repository.setLastId(++uniqueID);
         Task task = new Task(uniqueID, status, name, description, date);
         repository.addTask(task);
-        System.out.println("Задача успешно создана!");
-        System.out.println("id:" + uniqueID + "\nСтатус: " + status + "\nНазвание: " + name +
-                "\nОписание: " + description + "\nКрайний срок: " + format.format(date));
+        addTask.printTaskCreated(task);
     }
 
     public void listTasks() {
         this.repository.getTasks().forEach(System.out::println);
     }
 
-    public void editTask(Scanner scanner) {
-
-    }/*Pizdec*/
-
-    public void editTaskNew(Scanner scanner) {
+    public void editTask(String taskName, InputHandler inputHandler) {
+        TaskEditor taskEditor = new TaskEditor();
         System.out.println("Укажите название задачи, которую хотите отредактировать:");
-        Task task = repository.findTaskbyName(getNonEmptyInput(scanner));
+        Task task = repository.findTaskByName(taskName);
         if (task == null) {
             System.out.println("Задача не найдена.");
             return;
@@ -98,12 +79,12 @@ public class Service {
         System.out.println("Задача найдена: " + task.getName());
         System.out.println("Текущие данные задачи:");
         System.out.println(task);
-        EditTask.editTaskFields(task, scanner);
+        taskEditor.editTaskFields(task, inputHandler);
     }
 
-    public void deleteTask(Scanner scanner) {
+    public void deleteTask(InputHandler inputHandler) {
         System.out.println("Укажите название задачи для удаления:");
-        String name = getNonEmptyInput(scanner);
+        String name = inputHandler.getNonEmptyInput();
         HashSet<Task> tasks = repository.getTasks();
         for (Task task : tasks) {
             if (Objects.equals(task.getName(), name)) {
@@ -119,8 +100,10 @@ public class Service {
         }
     }
 
-    public void filterTasks(Scanner scanner) {
+    public void filterTasks(InputHandler inputHandler) {
         HashSet<Task> tasks = repository.getTasks();
+        FilterTasks filterTasks = new FilterTasks();
+
 
         if (tasks.isEmpty()) {
             System.out.println("Список задач пуст.");
@@ -131,14 +114,14 @@ public class Service {
         System.out.println("1. По дате");
         System.out.println("2. По статусу");
 
-        int choice = FilterTasks.getIntInput(scanner, 1, 2);
+        int choice = inputHandler.getIntInput(1, 2);
 
         switch (choice) {
             case 1:
-                FilterTasks.filterByDate(tasks, scanner);
+                filterTasks.filterByDate(tasks, scanner);
                 break;
             case 2:
-                FilterTasks.filterByStatus(tasks, scanner);
+                filterTasks.filterByStatus(tasks, scanner);
                 break;
             default:
                 System.out.println("Неверный выбор.");
@@ -147,6 +130,7 @@ public class Service {
 
     public void sortTasks(Scanner scanner) {
         HashSet<Task> tasks = repository.getTasks();
+        SortTasks sortTasks = new SortTasks();
 
         if (tasks.isEmpty()) {
             System.out.println("Список задач пуст.");
@@ -157,14 +141,14 @@ public class Service {
         System.out.println("1. По дате");
         System.out.println("2. По статусу");
 
-        int choice = SortTasks.getIntInput(scanner, 1, 2);
+        int choice = sortTasks.getIntInput(scanner, 1, 2);
 
         switch (choice) {
             case 1:
-                SortTasks.sortByDate(tasks);
+                sortTasks.sortByDate(tasks);
                 break;
             case 2:
-                SortTasks.sortByStatus(tasks);
+                sortTasks.sortByStatus(tasks);
                 break;
             default:
                 System.out.println("Неверный выбор.");
@@ -176,15 +160,9 @@ public class Service {
         System.exit(0);
     }
 
-    public boolean checkEmpty() {
+    public boolean checkTaskListIsEmpty() {
         return this.repository.getTasks().isEmpty();
     }
 
-    protected static String getNonEmptyInput(Scanner scanner) {
-        String input = "";
-        while (input.trim().isEmpty()) {
-            input = scanner.nextLine();
-        }
-        return input;
-    }
+
 }

@@ -8,22 +8,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class FilterTasks {
-    static int getIntInput(Scanner scanner, int min, int max) {
-        while (true) {
-            try {
-                int input = Integer.parseInt(scanner.nextLine().trim());
-                if (input >= min && input <= max) {
-                    return input;
-                } else {
-                    System.out.println("Введите число от " + min + " до " + max + ".");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Неверный ввод. Пожалуйста, введите число.");
-            }
-        }
-    }
 
-    static void filterByDate(HashSet<Task> tasks, Scanner scanner) {
+    void filterByDate(HashSet<Task> tasks, Scanner scanner) {
         SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
         format.setLenient(false);
 
@@ -50,7 +36,7 @@ public class FilterTasks {
         }
     }
 
-    static void filterByStatus(HashSet<Task> tasks, Scanner scanner) {
+    void filterByStatus(HashSet<Task> tasks, Scanner scanner) {
         System.out.println("Доступные статусы:");
         System.out.println("1. TODO");
         System.out.println("2. IN_PROGRESS");
@@ -66,7 +52,7 @@ public class FilterTasks {
         printFilteredTasks(filteredTasks);
     }
 
-    private static void printFilteredTasks(List<Task> filteredTasks) {
+    void printFilteredTasks(List<Task> filteredTasks) {
         if (filteredTasks.isEmpty()) {
             System.out.println("Задачи не найдены.");
         } else {

@@ -20,7 +20,7 @@ public class Repository {
         tasks.add(task);
     }
 
-    public Task findTaskbyName(String taskName){
+    public Task findTaskByName(String taskName){
         for (Task task : tasks){
             if (Objects.equals(task.getName(), taskName))
                 return task;

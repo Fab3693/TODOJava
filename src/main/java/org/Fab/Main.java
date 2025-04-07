@@ -4,12 +4,16 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        Controller controller = new Controller();
+        InputHandler inputHandler = new InputHandler();
+        Repository repository = new Repository();
+        Service service = new Service(repository);
+        Controller controller = new Controller(service, inputHandler);
+
         controller.greeting();
 
         while (true) {
             String input = controller.consoleInput();
-            TaskCommands command = Service.getCommand(input);
+            TaskCommands command = controller.getCommand(input);
             if (command == TaskCommands.EXIT) {
                 break;
             }

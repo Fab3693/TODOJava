@@ -4,17 +4,19 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Scanner;
 
 @Getter
 @Setter
 public class Controller {
-    private Scanner console;
-    private Service service;
+    private final Service service;
+    private final InputHandler inputHandler;
+    public static final String FIRST_VALUE = "1";
 
-    public Controller() {
-        this.console = new Scanner(System.in);
-        this.service = new Service();
+    public Controller(Service service, InputHandler inputHandler) {
+        this.service = service;
+        this.inputHandler = inputHandler;
     }
 
     public void greeting() {
@@ -28,13 +30,76 @@ public class Controller {
     }
 
     public String consoleInput() {
-        if (service.checkEmpty()) {
-            return "1";
+        if (service.checkTaskListIsEmpty()) {
+            return FIRST_VALUE;
         }
-        return console.nextLine();
+        return inputHandler.getNonEmptyInput(); /*console.nextLine();*/
+    }
+
+    public TaskCommands getCommand(String input) {
+        return service.getCommand(input);
+    }
+
+    public void addTask() {
+        System.out.println("Укажите название задачи:");
+        String name = inputHandler.getNonEmptyInput();
+        System.out.println("Укажите описание задачи:");
+        String description = inputHandler.getNonEmptyInput();
+        System.out.println("Укажите срок выполнения задачи в формате \"ДД:ММ:ГГГГ\":");
+        Date date = inputHandler.parseDate();
+        service.addTask(name, description, date);
+    }
+
+    public void editTask(InputHandler inputHandler) {
+        System.out.println("Укажите название задачи, которую хотите отредактировать:");
+        String taskName = inputHandler.getNonEmptyInput();
+        Task task = repository.findTaskByName(inputHandler.getNonEmptyInput());
+        if (task == null) {
+            System.out.println("Задача не найдена.");
+            return;
+        }
+        System.out.println("Задача найдена: " + task.getName());
+        System.out.println("Текущие данные задачи:");
+        System.out.println(task);
+        service.editTask(taskName, inputHandler);
+    }
+
+    public void deleteTask(InputHandler inputHandler) {
+        System.out.println("Укажите название задачи для удаления:");
+        String name = inputHandler.getNonEmptyInput();
+        service.deleteTask(inputHandler);
+    }
+    public void filterTasks(InputHandler inputHandler) {
+        service.filterTasks(inputHandler);
+    }
+    public void sortTasks(InputHandler inputHandler) {
+
     }
 
     public void executeCommand(TaskCommands command) {
-        service.executeCommand(command, console);
+        switch (command) {
+            case ADD:
+                addTask();
+                break;
+            case LIST:
+                service.listTasks();
+                break;
+            case EDIT:
+                editTask(inputHandler);
+                break;
+            case DELETE:
+                deleteTask(inputHandler);
+                break;
+            case FILTER:
+                filterTasks(inputHandler);
+                break;
+            case SORT:
+                sortTasks(inputHandler);
+                break;
+            case EXIT:
+                service.exit();
+                break;
+        }
+
     }
 }
