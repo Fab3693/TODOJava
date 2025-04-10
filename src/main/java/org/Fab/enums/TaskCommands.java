@@ -1,4 +1,4 @@
-package org.Fab;
+package org.Fab.enums;
 
 
 import lombok.AllArgsConstructor;

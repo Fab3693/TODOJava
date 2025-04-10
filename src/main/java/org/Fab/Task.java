@@ -1,6 +1,7 @@
 package org.Fab;
 
 import lombok.*;
+import org.Fab.enums.Status;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -15,12 +16,19 @@ public class Task {
     private String description;
     private Date date;
 
-    Task(int id, Status status, String name, String description, Date date) {
-        this.id = id;
+    public Task(Status status, String name, String description, Date date, Repository repository) {
+        this.id = setUniqueID(repository);
         this.status = status;
         this.name = name;
         this.description = description;
         this.date = date;
+        setUniqueID(repository);
+    }
+
+    private int setUniqueID(Repository repository){
+        int uniqueID = repository.getLastId();
+        repository.setLastId(uniqueID);
+        return repository.getLastId();
     }
 
     public String toString() {

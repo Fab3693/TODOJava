@@ -1,13 +1,12 @@
 package org.Fab;
 
-import java.util.*;
+import org.Fab.enums.TaskCommands;
 
 public class Main {
     public static void main(String[] args) {
-        InputHandler inputHandler = new InputHandler();
         Repository repository = new Repository();
         Service service = new Service(repository);
-        Controller controller = new Controller(service, inputHandler);
+        Controller controller = new Controller(service);
 
         controller.greeting();
 

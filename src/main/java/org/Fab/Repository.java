@@ -27,4 +27,8 @@ public class Repository {
         }
         return null;
     }
+
+    public void removeTask (Task task){
+        tasks.remove(task);
+    }
 }

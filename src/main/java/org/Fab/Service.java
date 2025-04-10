@@ -2,9 +2,11 @@ package org.Fab;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.Fab.enums.Status;
+import org.Fab.enums.TaskCommands;
+import org.Fab.enums.TaskFields;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -17,79 +19,98 @@ public class Service {
     }
 
     public TaskCommands getCommand(String input) {
-        if (!input.isEmpty()) {
-            for (TaskCommands taskCommands : TaskCommands.values()) {
-                if (taskCommands.getNumber() == Integer.parseInt(input) ||
-                        taskCommands.getCommand().equalsIgnoreCase(input)) {
-                    return taskCommands;
+        if (input == null || input.isEmpty()) return null;
+        for (TaskCommands command : TaskCommands.values()) {
+            if (command.getCommand().equalsIgnoreCase(input)) {
+                return command;
+            }
+        }
+        try {
+            int num = Integer.parseInt(input);
+            for (TaskCommands command : TaskCommands.values()) {
+                if (command.getNumber() == num) {
+                    return command;
                 }
             }
+        } catch (NumberFormatException ignored) {
         }
         return null;
     }
 
-//    public void executeCommand(TaskCommands command, Scanner scanner) {
-//        switch (command) {
-//            case ADD:
-//                addTask();
-//                break;
-//            case LIST:
-//                listTasks();
-//                break;
-//            case EDIT:
-//                editTask(scanner);
-//                break;
-//            case DELETE:
-//                deleteTask(scanner);
-//                break;
-//            case FILTER:
-//                filterTasks(scanner);
-//                break;
-//            case SORT:
-//                sortTasks(scanner);
-//                break;
-//            case EXIT:
-//                exit();
-//                break;
-//        }
-//    }
-
-    public void addTask(String name, String description, Date date) {
-        AddTask addTask = new AddTask();
-        Status status = Status.TODO;
-        int uniqueID = repository.getLastId();
-        repository.setLastId(++uniqueID);
-        Task task = new Task(uniqueID, status, name, description, date);
-        repository.addTask(task);
-        addTask.printTaskCreated(task);
-    }
-
-    public void listTasks() {
-        this.repository.getTasks().forEach(System.out::println);
-    }
-
-    public void editTask(String taskName, InputHandler inputHandler) {
-        TaskEditor taskEditor = new TaskEditor();
-        System.out.println("Укажите название задачи, которую хотите отредактировать:");
-        Task task = repository.findTaskByName(taskName);
-        if (task == null) {
-            System.out.println("Задача не найдена.");
-            return;
+    public TaskFields getTaskField(String fieldInput) {
+        if (fieldInput == null || fieldInput.isEmpty()) return null;
+        for (TaskFields field : TaskFields.values()) {
+            if (field.getFieldName().equalsIgnoreCase(fieldInput)) {
+                return field;
+            }
         }
-        System.out.println("Задача найдена: " + task.getName());
-        System.out.println("Текущие данные задачи:");
-        System.out.println(task);
-        taskEditor.editTaskFields(task, inputHandler);
+        try {
+            int num = Integer.parseInt(fieldInput);
+            for (TaskFields field : TaskFields.values()) {
+                if (field.getNumber() == num) {
+                    return field;
+                }
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return null;
     }
 
-    public void deleteTask(InputHandler inputHandler) {
-        System.out.println("Укажите название задачи для удаления:");
-        String name = inputHandler.getNonEmptyInput();
-        HashSet<Task> tasks = repository.getTasks();
-        for (Task task : tasks) {
-            if (Objects.equals(task.getName(), name)) {
-                tasks.remove(task);
-                System.out.println("Задача: " + name + " успешно удалена!");
+    private Status getStatus (String input){
+        if (input == null || input.isEmpty()) return null;
+        for (Status status : Status.values()) {
+            if (status.getName().equalsIgnoreCase(input)) {
+                return status;
+            }
+        }
+        try {
+            int num = Integer.parseInt(input);
+            for (Status status : Status.values()) {
+                if (status.getNumber() == num) {
+                    return status;
+                }
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return null;
+    }
+
+    public void addTask(String name, String description, Date date, Status status) {
+        Task task = new Task(status, name, description, date, repository);
+        repository.addTask(task);
+    }
+
+    public HashSet<Task> listTasks() {
+        return repository.getTasks();
+    }
+
+    void editTaskName(Task task, String newName) {
+        task.setName(newName);
+    }
+
+    void editTaskDescription(Task task, String newDescription) {
+        task.setDescription(newDescription);
+    }
+
+    void editTaskStatus(Task task, String newStatusString) {
+        try {
+            Status newStatus = Status.valueOf(newStatusString);
+            task.setStatus(newStatus);
+            System.out.println("Статус задачи успешно изменен на: " + newStatus);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Неверный статус. Допустимые значения: TODO, IN_PROGRESS, DONE.");
+        }
+    }
+
+    void editTaskDate(Task task, Date newDate) {
+        task.setDate(newDate);
+    }
+
+    public void deleteTask(String taskName) {
+        for (Task task : repository.getTasks()) {
+            if (Objects.equals(task.getName(), taskName)) {
+                repository.removeTask(task);
+                System.out.println("Задача: " + taskName + " успешно удалена!");
                 break;
             } else {
                 System.out.println("Задача с таким именем не найдена.");
@@ -100,69 +121,44 @@ public class Service {
         }
     }
 
-    public void filterTasks(InputHandler inputHandler) {
-        HashSet<Task> tasks = repository.getTasks();
-        FilterTasks filterTasks = new FilterTasks();
-
-
-        if (tasks.isEmpty()) {
-            System.out.println("Список задач пуст.");
-            return;
-        }
-
-        System.out.println("Выберите, по какому признаку нужна фильтрация:");
-        System.out.println("1. По дате");
-        System.out.println("2. По статусу");
-
-        int choice = inputHandler.getIntInput(1, 2);
-
-        switch (choice) {
-            case 1:
-                filterTasks.filterByDate(tasks, scanner);
-                break;
-            case 2:
-                filterTasks.filterByStatus(tasks, scanner);
-                break;
-            default:
-                System.out.println("Неверный выбор.");
-        }
+    public List<Task> filterTasksByDate(Date filterDate) {
+        return repository.getTasks().stream()
+                .filter(task -> task.getDate().equals(filterDate))
+                .toList();
     }
 
-    public void sortTasks(Scanner scanner) {
-        HashSet<Task> tasks = repository.getTasks();
-        SortTasks sortTasks = new SortTasks();
-
-        if (tasks.isEmpty()) {
-            System.out.println("Список задач пуст.");
-            return;
+    public List<Task> filterTasksByStatus(String filterStatus) {
+        Status status = getStatus(filterStatus);
+        if (status == null){
+            return null;
         }
+        return repository.getTasks().stream()
+                .filter(task -> task.getStatus() == status)
+                .toList();
+    }
 
-        System.out.println("Выберите, по какому признаку нужна сортировка:");
-        System.out.println("1. По дате");
-        System.out.println("2. По статусу");
+    public List<Task> sortByDate() {
+        return repository.getTasks().stream()
+                .sorted(Comparator.comparing(Task::getDate))
+                .toList();
+    }
 
-        int choice = sortTasks.getIntInput(scanner, 1, 2);
-
-        switch (choice) {
-            case 1:
-                sortTasks.sortByDate(tasks);
-                break;
-            case 2:
-                sortTasks.sortByStatus(tasks);
-                break;
-            default:
-                System.out.println("Неверный выбор.");
-        }
+    public List<Task> sortByStatus() {
+        return repository.getTasks().stream()
+                .sorted(Comparator.comparing(Task::getStatus))
+                .toList();
     }
 
     public void exit() {
-        System.out.println("До свидания!");
         System.exit(0);
     }
 
-    public boolean checkTaskListIsEmpty() {
-        return this.repository.getTasks().isEmpty();
+    public Task returnIfTaskExists(String taskName) {
+        return repository.findTaskByName(taskName);
     }
 
+    public boolean checkTaskListIsEmpty() {
+        return repository.getTasks().isEmpty();
+    }
 
 }
