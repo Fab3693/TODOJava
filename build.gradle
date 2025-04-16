@@ -12,12 +12,19 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.mockito:mockito-core:5.15.2'
+    testImplementation 'org.mockito:mockito-core:5.16.1'
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
     implementation group: 'joda-time', name: 'joda-time', version: '2.3'
+    testImplementation("org.mockito:mockito-junit-jupiter:5.16.1")
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+tasks.test {
+    jvmArgs(
+            "-javaagent:${classpath.find { it.name.contains("byte-buddy-agent") }.absolutePath}",
+            "-Xshare:off"
+    )
 }

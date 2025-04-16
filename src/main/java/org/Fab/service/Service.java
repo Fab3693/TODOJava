@@ -1,7 +1,9 @@
-package org.Fab;
+package org.Fab.service;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.Fab.repository.Repository;
+import org.Fab.entity.Task;
 import org.Fab.enums.Status;
 import org.Fab.enums.TaskCommands;
 import org.Fab.enums.TaskFields;
@@ -56,7 +58,7 @@ public class Service {
         return null;
     }
 
-    private Status getStatus (String input){
+    Status getStatus(String input) {
         if (input == null || input.isEmpty()) return null;
         for (Status status : Status.values()) {
             if (status.getName().equalsIgnoreCase(input)) {
@@ -75,6 +77,10 @@ public class Service {
         return null;
     }
 
+    public Status publicGetStatus(String input) {
+        return getStatus(input);
+    }
+
     public void addTask(String name, String description, Date date, Status status) {
         Task task = new Task(status, name, description, date, repository);
         repository.addTask(task);
@@ -84,25 +90,26 @@ public class Service {
         return repository.getTasks();
     }
 
-    void editTaskName(Task task, String newName) {
+    public void editTaskName(Task task, String newName) {
         task.setName(newName);
     }
 
-    void editTaskDescription(Task task, String newDescription) {
+    public void editTaskDescription(Task task, String newDescription) {
         task.setDescription(newDescription);
     }
 
-    void editTaskStatus(Task task, String newStatusString) {
-        try {
-            Status newStatus = Status.valueOf(newStatusString);
-            task.setStatus(newStatus);
-            System.out.println("Статус задачи успешно изменен на: " + newStatus);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Неверный статус. Допустимые значения: TODO, IN_PROGRESS, DONE.");
+    public void editTaskStatus(Task task, String newStatusString) {
+        Status newStatus = getStatus(newStatusString);
+        if (newStatus == null) {
+            System.out.println("Неверный статус. Допустимые значения: " +
+                    Arrays.toString(Status.values()) + " или их номера (1-3)");
+            return;
         }
+        task.setStatus(newStatus);
+        System.out.println("Статус задачи успешно изменен на: " + newStatus);
     }
 
-    void editTaskDate(Task task, Date newDate) {
+    public void editTaskDate(Task task, Date newDate) {
         task.setDate(newDate);
     }
 
@@ -129,7 +136,7 @@ public class Service {
 
     public List<Task> filterTasksByStatus(String filterStatus) {
         Status status = getStatus(filterStatus);
-        if (status == null){
+        if (status == null) {
             return null;
         }
         return repository.getTasks().stream()

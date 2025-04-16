@@ -1,5 +1,8 @@
 package org.Fab;
 
+import org.Fab.repository.Repository;
+import org.Fab.service.Service;
+import org.Fab.controller.Controller;
 import org.Fab.enums.TaskCommands;
 
 public class Main {

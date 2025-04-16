@@ -1,12 +1,10 @@
-/*
- * 1. Изменять задачу нужно в Service или Repository?
- * 2. Можно ли получать задачу в Controller для вывода информации о ней?
- * */
+package org.Fab.controller;
 
-package org.Fab;
-
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.Fab.service.Service;
+import org.Fab.entity.Task;
 import org.Fab.enums.Status;
 import org.Fab.enums.TaskCommands;
 import org.Fab.enums.TaskFields;
@@ -20,18 +18,12 @@ import java.util.Scanner;
 
 @Getter
 @Setter
+@Data
 public class Controller {
     private final Service service;
     private final Scanner scanner = new Scanner(System.in);
-    ;
-    private final SimpleDateFormat format;
-    private static final String DEFAULT_DATE_PATTERN = "dd:MM:yyyy";
+    private final SimpleDateFormat format = new SimpleDateFormat("dd:MM:yyyy");
     public static final String FIRST_VALUE = "1";
-
-    public Controller(Service service) {
-        this.service = service;
-        this.format = new SimpleDateFormat(DEFAULT_DATE_PATTERN);
-    }
 
     public void greeting() {
         System.out.println("Здравствуйте! Список задач пуст. " +
@@ -136,7 +128,7 @@ public class Controller {
         switchFields(task, field);
     }
 
-    private void switchFields (Task task, TaskFields field){
+    private void switchFields(Task task, TaskFields field) {
         switch (field) {
             case NAME:
                 System.out.println("Текущее название задачи: " + task.getName());
@@ -179,20 +171,20 @@ public class Controller {
         printFieldsForSortOrFilter();
         String input = getNonEmptyInput();
         TaskFields field = service.getTaskField(input);
-        if (field == null){
+        if (field == null) {
             System.out.println("Укажите корректный признак фильтрации.");
             return;
         }
-        List <Task> filtredTasks = null;
-        switch (field){
+        List<Task> filtredTasks = null;
+        switch (field) {
             case STATUS:
                 System.out.println("Доступные статусы: TODO, IN_PROGRESS, DONE");
-                while (filtredTasks == null){
+                while (filtredTasks == null) {
                     String filterStatus = getNonEmptyInput();
                     filtredTasks = service.filterTasksByStatus(filterStatus);
                 }
 
-                if (filtredTasks.isEmpty()){
+                if (filtredTasks.isEmpty()) {
                     System.out.println("Задачи не найдены.");
                     break;
                 }
@@ -202,7 +194,7 @@ public class Controller {
                 System.out.print("Введите значение фильтра по полю \"date\" (в формате dd:MM:yyyy): ");
                 Date filterDate = parseDate();
                 filtredTasks = service.filterTasksByDate(filterDate);
-                if (filtredTasks.isEmpty()){
+                if (filtredTasks.isEmpty()) {
                     System.out.println("Задачи не найдены.");
                     break;
                 }
@@ -216,8 +208,8 @@ public class Controller {
         printFieldsForSortOrFilter();
         String input = getNonEmptyInput();
         TaskFields field = service.getTaskField(input);
-        List <Task> sortedTasks;
-        switch (field){
+        List<Task> sortedTasks;
+        switch (field) {
             case STATUS:
                 sortedTasks = service.sortByStatus();
                 printFilteredOrSortedTasks(sortedTasks);
@@ -229,7 +221,7 @@ public class Controller {
         }
     }
 
-    void printFilteredOrSortedTasks(List<Task> filteredTasks) {
+    private void printFilteredOrSortedTasks(List<Task> filteredTasks) {
         if (filteredTasks.isEmpty()) {
             System.out.println("Задачи не найдены.");
         } else {
@@ -248,5 +240,4 @@ public class Controller {
         System.out.println("До свидания!");
         service.exit();
     }
-
 }

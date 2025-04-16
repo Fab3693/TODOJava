@@ -1,6 +1,7 @@
-package org.Fab;
+package org.Fab.entity;
 
 import lombok.*;
+import org.Fab.repository.Repository;
 import org.Fab.enums.Status;
 
 import java.text.SimpleDateFormat;
@@ -25,7 +26,7 @@ public class Task {
         setUniqueID(repository);
     }
 
-    private int setUniqueID(Repository repository){
+    private int setUniqueID(Repository repository) {
         int uniqueID = repository.getLastId();
         repository.setLastId(uniqueID);
         return repository.getLastId();
